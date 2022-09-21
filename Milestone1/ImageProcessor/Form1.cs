@@ -115,7 +115,36 @@ namespace ImageProcessing
         // Make a montage of files, four per row.
         private Bitmap? MakeMontage(string[] filenames, Color bgColor)
         {
-            return null;
+            int maxHeight = 0;
+            int maxWidth = 0;
+            int imageCount = filenames.Length;
+            Bitmap[] bitmaps = new Bitmap[imageCount];
+            for (int i = 0; i < imageCount; i++)
+            {
+                bitmaps[i] = LoadBitmapUnlocked(filenames[i]);
+                maxWidth = Math.Max(maxWidth, bitmaps[i].Width);
+                maxHeight = Math.Max(maxHeight, bitmaps[i].Height);
+            }
+
+            int columnCount = Math.Min(4, imageCount);
+            int width = maxWidth * columnCount;
+            int rowCount = (int)Math.Ceiling((double)(imageCount / 4.0));
+            int height = maxHeight * rowCount;
+            Bitmap result = new(width, height);
+
+            using (Graphics graphics = Graphics.FromImage(result))
+            {
+                graphics.Clear(bgColor);
+                for (int j = 0; j < imageCount; j++)
+                {
+                    int row = j / columnCount;
+                    int column = j % columnCount;
+                    int x = column * maxWidth;
+                    int y = row * maxHeight;
+                    graphics.DrawImage(bitmaps[j], x, y);
+                }
+            }
+            return result;
         }
 
         private void mnuFileExit_Click(object sender, EventArgs e)
