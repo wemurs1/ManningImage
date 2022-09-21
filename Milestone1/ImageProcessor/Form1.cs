@@ -91,7 +91,8 @@ namespace ImageProcessing
         // Restore the original unmodified image.
         private void mnuFileReset_Click(object sender, EventArgs e)
         {
-
+            CurrentBm = OriginalBm?.Clone() as Bitmap;
+            resultPictureBox.Image = CurrentBm;
         }
 
         // Make a montage of files.
@@ -125,7 +126,7 @@ namespace ImageProcessing
         // Load a bitmap without locking it.
         private Bitmap LoadBitmapUnlocked(string file_name)
         {
-            using (Bitmap bm = new Bitmap(file_name))
+            using (Bitmap bm = new(file_name))
             {
                 return new Bitmap(bm);
             }
