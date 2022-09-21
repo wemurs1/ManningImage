@@ -164,7 +164,11 @@ namespace ImageProcessing
         // Rotate the image.
         private void mnuGeometryRotate_Click(object sender, EventArgs e)
         {
+            var angle = InputForm.GetFloat("Rotation Angle", "Angle", "0",float.NegativeInfinity, float.PositiveInfinity, "error");
+            if (angle == float.NaN) return;
 
+            CurrentBm = CurrentBm?.RotateAtCenter(angle, Color.Black, InterpolationMode.High);
+            resultPictureBox.Image = CurrentBm;
         }
 
         // Scale the image uniformly.

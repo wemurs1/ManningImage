@@ -1,4 +1,5 @@
-﻿using System.Drawing.Imaging;
+﻿using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
 
 namespace ImageProcessing
 {
@@ -34,6 +35,24 @@ namespace ImageProcessing
                     throw new NotSupportedException(
                         "Unknown file extension " + extension);
             }
+        }
+
+        // Rotate an image around its center.
+        public static Bitmap RotateAtCenter(this Bitmap bm,
+            float angle, Color bgColor, InterpolationMode mode)
+        {
+            Bitmap result = new(bm.Width, bm.Height);
+            using (Graphics graphics = Graphics.FromImage(result))
+            {
+                graphics.Clear(bgColor);
+
+                graphics.TranslateTransform(-bm.Width / 2, -bm.Height / 2, MatrixOrder.Append);
+                graphics.RotateTransform(angle, MatrixOrder.Append);
+                graphics.TranslateTransform(bm.Width / 2, bm.Height / 2, MatrixOrder.Append);
+                graphics.InterpolationMode = mode;
+                graphics.DrawImage(bm, new PointF());
+            }
+            return result;
         }
     }
 }
