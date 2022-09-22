@@ -193,9 +193,9 @@ namespace ImageProcessing
             rawScale = rawScale.Trim();
             var rawScaleArray = rawScale.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             if (rawScaleArray.Length != 2)
-            { 
-                MessageBox.Show("Malformed input. Use number <space> number"); 
-                return; 
+            {
+                MessageBox.Show("Malformed input. Use number <space> number");
+                return;
             }
 
             float scaleX, scaleY;
@@ -215,7 +215,44 @@ namespace ImageProcessing
 
         private void mnuGeometryRotateFlip_Click(object sender, EventArgs e)
         {
+            InputForm dialog = new();
+            dialog.captionLabel.Text =
+                "1) Flip Horizontal\n" +
+                "2) Flip Vertical\n" +
+                "3) Rotate 90\n" +
+                "4) Rotate 180\n" +
+                "5) Rotate 270\n";
+            dialog.Text = "Rotate/Flip";
+            dialog.valueTextBox.Text = "1";
+            dialog.Size = new(300, 220);
+            if (dialog.ShowDialog() == DialogResult.Cancel) return;
+            int choice;
+            if (!int.TryParse(dialog.valueTextBox.Text, out choice) || choice < 1 || choice > 5)
+            {
+                MessageBox.Show("Choice should be an integer between 1 and 5");
+                return;
+            }
 
+            switch (choice)
+            {
+                case 1:
+                    CurrentBm?.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                    break;
+                case 2:
+                    CurrentBm?.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                    break;
+                case 3:
+                    CurrentBm?.RotateFlip(RotateFlipType.Rotate90FlipNone);
+                    break;
+                case 4:
+                    CurrentBm?.RotateFlip(RotateFlipType.Rotate180FlipNone);
+                    break;
+                case 5:
+                    CurrentBm?.RotateFlip(RotateFlipType.Rotate270FlipNone);
+                    break;
+            }
+
+            resultPictureBox.Image = CurrentBm;
         }
 
         #region Cropping
