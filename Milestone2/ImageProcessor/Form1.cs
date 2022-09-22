@@ -256,11 +256,13 @@ namespace ImageProcessing
         }
 
         #region Cropping
+        private Point StartPoint, EndPoint;
 
         // Let the user select an area and crop to that area.
         private void mnuGeometryCrop_Click(object sender, EventArgs e)
         {
-
+            resultPictureBox.MouseDown += crop_MouseDown;
+            resultPictureBox.Cursor = Cursors.Cross;
         }
 
         // Let the user select an area with a desired
@@ -268,6 +270,37 @@ namespace ImageProcessing
         private void mnuGeometryCropToAspect_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void crop_MouseDown(object? sender, MouseEventArgs e)
+        {
+            resultPictureBox.MouseDown -= crop_MouseDown;
+            resultPictureBox.MouseMove += crop_MouseMove;
+            resultPictureBox.MouseUp += crop_MouseUp;
+            resultPictureBox.Paint += resultPictureBox_Paint;
+            StartPoint = new Point(e.X, e.Y);
+            EndPoint = StartPoint;
+        }
+
+        private void resultPictureBox_Paint(object? sender, PaintEventArgs e)
+        {
+            e.Graphics.DrawDashedRectange(Color.Black, Color.White, 1, 3, StartPoint, EndPoint);
+        }
+
+        private void crop_MouseMove(object? sender, MouseEventArgs e)
+        {
+            EndPoint = new Point(e.X, e.Y);
+            resultPictureBox.Refresh();
+        }
+
+        private void crop_MouseUp(object? sender, MouseEventArgs e)
+        {
+            resultPictureBox.Cursor = Cursors.Default;
+            resultPictureBox.MouseMove -= crop_MouseMove;
+            resultPictureBox.MouseUp -= crop_MouseUp;
+            resultPictureBox.Paint -= resultPictureBox_Paint;
+            CurrentBm = CurrentBm?.Crop(StartPoint.ToRectangle(EndPoint), InterpolationMode.High);
+            resultPictureBox.Image = CurrentBm;
         }
 
         #endregion Cropping

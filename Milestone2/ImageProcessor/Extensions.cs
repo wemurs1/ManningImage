@@ -83,5 +83,55 @@ namespace ImageProcessing
 
             return result;
         }
+
+        // Crop and image to a desired rectangle
+        public static Bitmap Crop(this Image image, Rectangle rect, InterpolationMode mode)
+        {
+            Bitmap bm = new Bitmap(rect.Width, rect.Height);
+            Point[] destinationPoints =
+            {
+                new Point(0,0),
+                new Point(rect.Width - 1, 0),
+                new Point(0, rect.Height - 1)
+            };
+
+            using (Graphics graphics = Graphics.FromImage(bm))
+            {
+                graphics.InterpolationMode = mode;
+                graphics.DrawImage(image, destinationPoints, rect, GraphicsUnit.Pixel);
+            }
+
+            return bm;
+        }
+
+        // Draw a dashed rectangle with the given colours
+        public static void DrawDashedRectange(
+            this Graphics graphics, 
+            Color color1, 
+            Color color2, 
+            float thickness, 
+            float dashsize, 
+            Point point1, 
+            Point point2)
+        {
+            Rectangle rectangle = point1.ToRectangle(point2);
+            using (Pen pen = new Pen(color1, thickness))
+            {
+                graphics.DrawRectangle(pen, rectangle);
+                pen.DashPattern = new float[] { dashsize, dashsize };
+                pen.Color = color2;
+                graphics.DrawRectangle(pen, rectangle);
+            }
+        }
+
+        // Make a rectangle from 2 corner points
+        public static Rectangle ToRectangle(this Point point1, Point point2)
+        {
+            int x = Math.Min(point1.X, point2.X);
+            int y = Math.Min(point1.Y, point2.Y);
+            int width = Math.Abs(point1.X - point2.X);
+            int height = Math.Abs(point1.Y - point2.Y);
+            return new Rectangle(x, y, width, height);
+        }
     }
 }
