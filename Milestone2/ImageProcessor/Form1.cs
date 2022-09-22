@@ -164,7 +164,7 @@ namespace ImageProcessing
         // Rotate the image.
         private void mnuGeometryRotate_Click(object sender, EventArgs e)
         {
-            var angle = InputForm.GetFloat("Rotation Angle", "Angle", "0",float.NegativeInfinity, float.PositiveInfinity, "error");
+            var angle = InputForm.GetFloat("Rotation Angle", "Angle", "0",float.NegativeInfinity, float.PositiveInfinity, "Invalid input");
             if (angle == float.NaN) return;
 
             CurrentBm = CurrentBm?.RotateAtCenter(angle, Color.Black, InterpolationMode.High);
@@ -174,7 +174,11 @@ namespace ImageProcessing
         // Scale the image uniformly.
         private void mnuGeometryScale_Click(object sender, EventArgs e)
         {
+            var scale = InputForm.GetFloat("Scale Factor", "Scale", "1", 0.1f, 100.0f, "Invalid input");
+            if (scale == float.NaN) return;
 
+            CurrentBm = CurrentBm?.Scale(scale, InterpolationMode.High);
+            resultPictureBox.Image = CurrentBm;
         }
 
         private void mnuGeometryStretch_Click(object sender, EventArgs e)

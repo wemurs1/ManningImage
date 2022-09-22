@@ -54,5 +54,34 @@ namespace ImageProcessing
             }
             return result;
         }
+
+
+        // Scale an image uniformly
+        public static Bitmap Scale(this Bitmap bm, float scale, InterpolationMode mode)
+        {
+            return bm.Scale(scale, scale, mode);
+        }
+
+        // Scale an image non-uniformly 
+        public static Bitmap Scale(this Bitmap bm, float xscale, float yscale, InterpolationMode mode)
+        {
+            int width = (int)(xscale * bm.Width);
+            int height = (int)(yscale * bm.Height);
+            Point[] destinationPoints =
+{
+                    new Point(0, 0), // top left
+                    new Point(width - 1, 0), //top right
+                    new Point(0, height - 1) // bottom left
+                };
+
+            Bitmap result = new(width, height);
+            using (Graphics graphics = Graphics.FromImage(result))
+            {
+                graphics.InterpolationMode = mode;
+                graphics.DrawImage(bm, destinationPoints);
+            }
+
+            return result;
+        }
     }
 }
