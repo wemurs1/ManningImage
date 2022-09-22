@@ -24,7 +24,7 @@ namespace ImageProcessing
             InitializeComponent();
         }
 
-        internal static string GetString(
+        internal static string? GetString(
             string title, string prompt, string defaultValue)
         {
             // Prepare the dialog.

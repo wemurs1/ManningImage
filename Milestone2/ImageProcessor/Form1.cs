@@ -164,7 +164,7 @@ namespace ImageProcessing
         // Rotate the image.
         private void mnuGeometryRotate_Click(object sender, EventArgs e)
         {
-            var angle = InputForm.GetFloat("Rotation Angle", "Angle", "0",float.NegativeInfinity, float.PositiveInfinity, "Invalid input");
+            var angle = InputForm.GetFloat("Rotation Angle", "Angle", "0", float.NegativeInfinity, float.PositiveInfinity, "Invalid input");
             if (angle == float.NaN) return;
 
             CurrentBm = CurrentBm?.RotateAtCenter(angle, Color.Black, InterpolationMode.High);
@@ -183,7 +183,34 @@ namespace ImageProcessing
 
         private void mnuGeometryStretch_Click(object sender, EventArgs e)
         {
+            var rawScale = InputForm.GetString("Stretch Parameters", "Stretch x Stretch y (space as seperator)", "1 1");
+            if (rawScale == null)
+            {
+                MessageBox.Show("No input detected");
+                return;
+            }
 
+            rawScale = rawScale.Trim();
+            var rawScaleArray = rawScale.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (rawScaleArray.Length != 2)
+            { 
+                MessageBox.Show("Malformed input. Use number <space> number"); 
+                return; 
+            }
+
+            float scaleX, scaleY;
+            if (!float.TryParse(rawScaleArray[0], out scaleX))
+            {
+                MessageBox.Show($"X value not a valid float: {rawScaleArray[0]}");
+            }
+
+            if (!float.TryParse(rawScaleArray[1], out scaleY))
+            {
+                MessageBox.Show($"Y value not a valid float: {rawScaleArray[1]}");
+            }
+
+            CurrentBm = CurrentBm?.Scale(scaleX, scaleY, InterpolationMode.High);
+            resultPictureBox.Image = CurrentBm;
         }
 
         private void mnuGeometryRotateFlip_Click(object sender, EventArgs e)
