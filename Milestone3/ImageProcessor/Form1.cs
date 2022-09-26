@@ -324,25 +324,59 @@ namespace ImageProcessing
         // Set color components less than a specified value to 0.
         private void mnuPointColorCutoff_Click(object sender, EventArgs e)
         {
+            var cutOff = InputForm.GetInt("Cutoff Value", "Cutoff (0 - 255)", "0", 0, 255, "Value should be between 0 and 255");
+            if (cutOff < 0 || cutOff > 255)
+            {
+                MessageBox.Show("Value should be between 0 and 255");
+                return;
+            }
 
+            CurrentBm?.ApplyPointOp(
+                (ref byte r, ref byte g, ref byte b, ref byte a) =>
+                {
+                    if (r < cutOff) r = 0;
+                    if (g < cutOff) g = 0;
+                    if (b < cutOff) b = 0;
+                }
+            );
+            resultPictureBox.Refresh();
         }
 
         // Set each pixel's red color component to 0.
         private void mnuPointClearRed_Click(object sender, EventArgs e)
         {
-
+            CurrentBm?.ApplyPointOp(
+                (ref byte r, ref byte g, ref byte b, ref byte a) =>
+                {
+                    r = 0;
+                }
+            );
+            resultPictureBox.Refresh();
         }
 
         // Set each pixel's green color component to 0.
         private void mnuPointClearGreen_Click(object sender, EventArgs e)
         {
-
+            CurrentBm?.ApplyPointOp(
+                (ref byte r, ref byte g, ref byte b, ref byte a) =>
+                {
+                    g = 0;
+                }
+            );
+            resultPictureBox.Refresh();
         }
+
 
         // Set each pixel's blue color component to 0.
         private void mnuPointClearBlue_Click(object sender, EventArgs e)
         {
-
+            CurrentBm?.ApplyPointOp(
+                (ref byte r, ref byte g, ref byte b, ref byte a) =>
+                {
+                    b = 0;
+                }
+            );
+            resultPictureBox.Refresh();
         }
 
         // Average each pixel's color component.
