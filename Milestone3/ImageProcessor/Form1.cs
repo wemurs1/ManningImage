@@ -382,7 +382,16 @@ namespace ImageProcessing
         // Average each pixel's color component.
         private void mnuPointAverage_Click(object sender, EventArgs e)
         {
-
+            CurrentBm?.ApplyPointOp(
+                (ref byte r, ref byte g, ref byte b, ref byte a) =>
+                {
+                    var avg = (byte)((r + g + b) / 3);
+                    r = avg;
+                    g = avg;
+                    b = avg;
+                }
+            );
+            resultPictureBox.Refresh();
         }
 
         // Convert each pixel to grayscale.
