@@ -429,13 +429,37 @@ namespace ImageProcessing
         // Apply a color tone to the image.
         private void mnuPointColorTone_Click(object sender, EventArgs e)
         {
-
+            if (cdColorTone.ShowDialog() == DialogResult.OK)
+            {
+                float newR = cdColorTone.Color.R;
+                float newG = cdColorTone.Color.G;
+                float newB = cdColorTone.Color.B;
+                CurrentBm?.ApplyPointOp(
+                    (ref byte r, ref byte g, ref byte b, ref byte a) =>
+                    {
+                        float brightness = (r + g + b) / (3f * 255f);
+                        r = (byte)(brightness * newR);
+                        g = (byte)(brightness * newG);
+                        b = (byte)(brightness * newB);
+                    }
+                );
+                resultPictureBox.Refresh();
+            }
         }
 
         // Set non-maximal color components to 0.
         private void mnuPointSaturate_Click(object sender, EventArgs e)
         {
-
+            CurrentBm?.ApplyPointOp(
+                (ref byte r, ref byte g, ref byte b, ref byte a) =>
+                {
+                    byte max = Math.Max(Math.Max(r, g), b);
+                    if (r != max) r = 0;
+                    if (g != max) g = 0;
+                    if (b != max) b = 0;
+                }
+            );
+            resultPictureBox.Refresh();
         }
 
         #endregion Point Processes
