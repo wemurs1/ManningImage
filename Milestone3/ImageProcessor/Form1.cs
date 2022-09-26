@@ -397,13 +397,33 @@ namespace ImageProcessing
         // Convert each pixel to grayscale.
         private void mnuPointGrayscale_Click(object sender, EventArgs e)
         {
-
+            CurrentBm?.ApplyPointOp(
+            (ref byte r, ref byte g, ref byte b, ref byte a) =>
+                {
+                    var avg = (byte)(r * 0.3 + g * 0.5 + b * 0.2);
+                    r = avg;
+                    g = avg;
+                    b = avg;
+                }
+            );
+            resultPictureBox.Refresh();
         }
 
         // Convert each pixel to sepia tone.
         private void mnuPointSepiaTone_Click(object sender, EventArgs e)
         {
-
+            CurrentBm?.ApplyPointOp(
+                (ref byte r, ref byte g, ref byte b, ref byte a) =>
+                    {
+                        float newR = r * 0.393f + g * 0.769f + b * 0.189f;
+                        float newG = r * 0.349f + g * 0.686f + b * 0.168f;
+                        float newB = r * 0.272f + g * 0.534f + b * 0.131f;
+                        r = (byte)(newR > 255 ? 255 : newR);
+                        g = (byte)(newG > 255 ? 255 : newG);
+                        b = (byte)(newB > 255 ? 255 : newB);
+                    }
+                );
+            resultPictureBox.Refresh();
         }
 
         // Apply a color tone to the image.
