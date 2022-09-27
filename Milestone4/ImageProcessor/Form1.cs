@@ -468,13 +468,54 @@ namespace ImageProcessing
 
         private void mnuEnhancementsColor_Click(object sender, EventArgs e)
         {
+            // Get the saturation factor.
+            float factor = InputForm.GetFloat(
+                "Saturation", "Saturation Factor:",
+                "1.5", 0f, 2f,
+                "The saturation factor should be a floating point number between 0.0 and 2.0.");
+            if (float.IsNaN(factor)) return;
 
+            // Adjust the image's s values.
+            CurrentBm?.ApplyPointOp(
+                (ref byte r, ref byte g, ref byte b, ref byte a) =>
+                {
+                    // Convert to HLS.
+                    double h, l, s;
+                    RgbToHls(r, g, b, out h, out l, out s);
+
+                    // Scale the lightness.
+                    s = AdjustValue(s, factor);
+
+                    // Convert back to RGB.
+                    HlsToRgb(h, l, s, out r, out g, out b);
+                });
+
+            resultPictureBox.Refresh();
         }
 
         // Use histogram stretching to modify contrast.
         private void mnuEnhancementsContrast_Click(object sender, EventArgs e)
         {
+            // Get the saturation factor.
+            float factor = InputForm.GetFloat(
+                "Contrast", "Contrast Factor:",
+                "1.0", 0f, float.MaxValue,
+                "The contrast factor should be a floating point number greater than 0.0");
+            if (float.IsNaN(factor)) return;
 
+            CurrentBm?.ApplyPointOp(
+                (ref byte r, ref byte g, ref byte b, ref byte a) =>
+                {
+                    float fr = 128 + (r - 128) * factor;
+                    float fg = 128 + (g - 128) * factor;
+                    float fb = 128 + (b - 128) * factor;
+                    r = fr.ToByte();
+                    g = fg.ToByte();
+                    b = fb.ToByte();
+                }
+            );
+
+            resultPictureBox.Refresh();
         }
 
         private void mnuEnhancementsBrightness_Click(object sender, EventArgs e)
