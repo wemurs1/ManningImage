@@ -480,14 +480,14 @@ namespace ImageProcessing
                 (ref byte r, ref byte g, ref byte b, ref byte a) =>
                 {
                     // Convert to HLS.
-                    double h, l, s;
-                    RgbToHls(r, g, b, out h, out l, out s);
+                    double h, l, s, ha;
+                    Converters.RgbaToHsl(r, g, b, a, out h, out l, out s, out ha);
 
                     // Scale the lightness.
                     s = AdjustValue(s, factor);
 
                     // Convert back to RGB.
-                    HlsToRgb(h, l, s, out r, out g, out b);
+                    Converters.HslToRgba(h, l, s, ha, out r, out g, out b, out a);
                 });
 
             resultPictureBox.Refresh();
@@ -532,14 +532,14 @@ namespace ImageProcessing
                 (ref byte r, ref byte g, ref byte b, ref byte a) =>
                 {
                     // Convert to HLS.
-                    double h, l, s;
-                    RgbToHls(r, g, b, out h, out l, out s);
+                    double h, l, s, hlsa;
+                    Converters.RgbaToHsl(r, g, b, a, out h, out l, out s, out hlsa);
 
                     // Scale the lightness.
                     l = AdjustValue(l, factor);
 
                     // Convert back to RGB.
-                    HlsToRgb(h, l, s, out r, out g, out b);
+                    Converters.HslToRgba(h, l, s, hlsa, out r, out g, out b, out a);
                 });
 
             resultPictureBox.Refresh();
