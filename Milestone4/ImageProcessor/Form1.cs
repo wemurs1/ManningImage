@@ -480,14 +480,18 @@ namespace ImageProcessing
                 (ref byte r, ref byte g, ref byte b, ref byte a) =>
                 {
                     // Convert to HLS.
-                    double h, l, s, ha;
-                    Converters.RgbaToHsl(r, g, b, a, out h, out l, out s, out ha);
+                    double h, l, s;
+                    Converters.RgbToHls(r, g, b, out h, out l, out s);
 
                     // Scale the lightness.
                     s = AdjustValue(s, factor);
 
                     // Convert back to RGB.
-                    Converters.HslToRgba(h, l, s, ha, out r, out g, out b, out a);
+                    int ir, ig, ib;
+                    Converters.HlsToRgb(h, l, s, out ir, out ig, out ib);
+                    r = (byte)ir;
+                    g = (byte)ig;
+                    b = (byte)ib;
                 });
 
             resultPictureBox.Refresh();
@@ -532,88 +536,21 @@ namespace ImageProcessing
                 (ref byte r, ref byte g, ref byte b, ref byte a) =>
                 {
                     // Convert to HLS.
-                    double h, l, s, hlsa;
-                    Converters.RgbaToHsl(r, g, b, a, out h, out l, out s, out hlsa);
+                    double h, l, s;
+                    Converters.RgbToHls(r, g, b, out h, out l, out s);
 
                     // Scale the lightness.
                     l = AdjustValue(l, factor);
 
                     // Convert back to RGB.
-                    Converters.HslToRgba(h, l, s, hlsa, out r, out g, out b, out a);
+                    int ir, ig, ib;
+                    Converters.HlsToRgb(h, l, s, out ir, out ig, out ib);
+                    r = (byte)ir;
+                    g = (byte)ig;
+                    b = (byte)ib;
                 });
 
             resultPictureBox.Refresh();
-        }
-
-        private double HuetoRGB(double m1, double m2, double h)
-        {
-            if (h < 0) h += 1.0;
-            if (h > 1) h -= 1.0;
-            if (6.0 * h < 1)
-                return (m1 + (m2 - m1) * h * 6.0);
-            if (2.0 * h < 1)
-                return m2;
-            if (3.0 * h < 2.0)
-                return (m1 + (m2 - m1) * ((2.0 / 3.0) - h) * 6.0);
-            return m1;
-        }
-
-        private void HlsToRgb(double h, double l, double s, out byte r, out byte g, out byte b)
-        {
-            double m1, m2;
-            double dr, dg, db;
-
-            if (s == 0)
-            {
-                dr = dg = db = l;
-            }
-            else
-            {
-                if (l <= 0.5)
-                    m2 = l * (1.0 + s);
-                else
-                    m2 = l + s - l * s;
-                m1 = 2.0 * l - m2;
-                dr = HuetoRGB(m1, m2, h + 1.0 / 3.0);
-                dg = HuetoRGB(m1, m2, h);
-                db = HuetoRGB(m1, m2, h - 1.0 / 3.0);
-            }
-            r = (dr * 255).ToByte();
-            g = (dg * 255).ToByte();
-            b = (db * 255).ToByte();
-        }
-
-        private void RgbToHls(byte r, byte g, byte b, out double h, out double l, out double s)
-        {
-            double delta;
-            double dr = (double)(r / 255.0);
-            double dg = (double)(g / 255.0);
-            double db = (double)(b / 255.0);
-            double cmax = Math.Max(dr, Math.Max(dg, db));
-            double cmin = Math.Min(dr, Math.Min(dg, db));
-            l = (cmax + cmin) / 2.0;
-            if (cmax == cmin)
-            {
-                s = 0;
-                h = 0; // it''s really undefined
-            }
-            else
-            {
-                if (l < 0.5)
-                    s = (cmax - cmin) / (cmax + cmin);
-                else
-                    s = (cmax - cmin) / (2.0 - cmax - cmin);
-                delta = cmax - cmin;
-                if (dr == cmax)
-                    h = (dg - db) / delta;
-                else if (dg == cmax)
-                    h = 2.0 + (db - dr) / delta;
-                else
-                    h = 4.0 + (dr - dg) / delta;
-                h /= 6.0;
-                if (h < 0.0)
-                    h += 1;
-            }
         }
 
         // Adjust the value closer to 0 or 1.

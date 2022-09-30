@@ -1,5 +1,4 @@
-﻿using ImageProcessor;
-using System.Drawing.Drawing2D;
+﻿using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 
 namespace ImageProcessing

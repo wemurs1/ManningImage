@@ -6,88 +6,161 @@ namespace ImageProcessing
 {
     public class Converters
     {
-        /// <summary>
-        /// Converts an HSL color value to RGB.
-        /// </summary>
-        /// <returns>RGBA Color. Ranges [0, 255]</returns>
-        public static void HslToRgba(
-            double hue, double saturation, double lightness, double hslAlpha,
-            out byte red, out byte green, out byte blue, out byte alpha)
+        // http://csharphelper.com/blog/2016/08/convert-between-rgb-and-hls-color-models-in-c/
+
+        // Convert an RGB value into an HLS value.
+
+        public static void RgbToHls(int r, int g, int b,
+
+            out double h, out double l, out double s)
+
         {
-            double r, g, b;
 
-            if (saturation == 0.0f)
-                r = g = b = lightness;
+            // Convert RGB to a 0.0 to 1.0 range.
 
-            else
+            double double_r = r / 255.0;
+
+            double double_g = g / 255.0;
+
+            double double_b = b / 255.0;
+
+
+
+            // Get the maximum and minimum RGB components.
+
+            double max = Math.Max(Math.Max(double_r, double_g), double_b);
+
+            double min = Math.Min(Math.Min(double_r, double_g), double_b);
+
+
+
+            double diff = max - min;
+
+            l = (max + min) / 2;
+
+            if (Math.Abs(diff) < 0.00001)
+
             {
-                var q = lightness < 0.5f ? lightness * (1.0f + saturation) : lightness + saturation -lightness * saturation;
-                var p = 2.0f * lightness - q;
-                r = HueToRgb(p, q, hue + 1.0f / 3.0f);
-                g = HueToRgb(p, q, hue);
-                b = HueToRgb(p, q,hue - 1.0f / 3.0f);
+
+                s = 0;
+
+                h = 0;  // H is really undefined.
+
             }
 
-            red = (r * 255).ToByte();
-            green = (g * 255).ToByte();
-            blue = (b * 255).ToByte();
-            alpha = (hslAlpha * 255).ToByte();
-        }
-
-        // Helper for HslToRgba
-        private static double HueToRgb(double p, double q, double t)
-        {
-            if (t < 0.0f) t += 1.0f;
-            if (t > 1.0f) t -= 1.0f;
-            if (t < 1.0f / 6.0f) return p + (q - p) * 6.0d * t;
-            if (t < 1.0f / 2.0f) return q;
-            if (t < 2.0f / 3.0f) return p + (q - p) * (2.0d / 3.0d - t) * 6.0d;
-            return p;
-        }
-
-        /// <summary>
-        /// Converts an RGB color value to HSL.
-        /// </summary>
-        /// <param name="rgba"></param>
-        /// <returns></returns>
-        public static void RgbaToHsl(
-             byte red,  byte green,  byte blue,  byte alpha,
-             out double hue, out double saturation, out double lightness, out double hslAlpha)
-        {
-            float r = red / 255.0f;
-            float g = green / 255.0f;
-            float b = blue / 255.0f;
-
-            float max = (r > g && r > b) ? r : (g > b) ? g : b;
-            float min = (r < g && r < b) ? r : (g < b) ? g : b;
-
-            float h, s, l;
-            h = s = l = (max + min) / 2.0f;
-
-            if (max == min)
-                h = s = 0.0f;
-
             else
+
             {
-                float d = max - min;
-                s = (l > 0.5f) ? d / (2.0f - max - min) : d / (max + min);
 
-                if (r > g && r > b)
-                    h = (g - b) / d + (g < b ? 6.0f : 0.0f);
+                if (l <= 0.5) s = diff / (max + min);
 
-                else if (g > b)
-                    h = (b - r) / d + 2.0f;
+                else s = diff / (2 - max - min);
 
-                else
-                    h = (r - g) / d + 4.0f;
 
-                h /= 6.0f;
+
+                double r_dist = (max - double_r) / diff;
+
+                double g_dist = (max - double_g) / diff;
+
+                double b_dist = (max - double_b) / diff;
+
+
+
+                if (double_r == max) h = b_dist - g_dist;
+
+                else if (double_g == max) h = 2 + r_dist - b_dist;
+
+                else h = 4 + g_dist - r_dist;
+
+
+
+                h = h * 60;
+
+                if (h < 0) h += 360;
+
             }
 
-            hue = h;
-            saturation = s;
-            lightness = l;
-            hslAlpha = alpha / 255.0f;
         }
+
+
+
+        // Convert an HLS value into an RGB value.
+
+        public static void HlsToRgb(double h, double l, double s,
+
+            out int r, out int g, out int b)
+
+        {
+
+            double p2;
+
+            if (l <= 0.5) p2 = l * (1 + s);
+
+            else p2 = l + s - l * s;
+
+
+
+            double p1 = 2 * l - p2;
+
+            double double_r, double_g, double_b;
+
+            if (s == 0)
+
+            {
+
+                double_r = l;
+
+                double_g = l;
+
+                double_b = l;
+
+            }
+
+            else
+
+            {
+
+                double_r = QqhToRgb(p1, p2, h + 120);
+
+                double_g = QqhToRgb(p1, p2, h);
+
+                double_b = QqhToRgb(p1, p2, h - 120);
+
+            }
+
+
+
+            // Convert RGB to the 0 to 255 range.
+
+            r = (int)(double_r * 255.0);
+
+            g = (int)(double_g * 255.0);
+
+            b = (int)(double_b * 255.0);
+
+        }
+
+
+
+        private static double QqhToRgb(double q1, double q2, double hue)
+
+        {
+
+            if (hue > 360) hue -= 360;
+
+            else if (hue < 0) hue += 360;
+
+
+
+            if (hue < 60) return q1 + (q2 - q1) * hue / 60;
+
+            if (hue < 180) return q2;
+
+            if (hue < 240) return q1 + (q2 - q1) * (240 - hue) / 60;
+
+            return q1;
+
+        }
+
     }
 }
