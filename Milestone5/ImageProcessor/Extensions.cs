@@ -176,6 +176,15 @@ namespace ImageProcessing
             return (byte)Math.Round(value);
         }
 
+        // Convert an int into a byte keeping
+        // its value between 0 and 255.
+        public static byte ToByte(this int value)
+        {
+            if (value < 0) return (byte)0;
+            if (value > 255) return (byte)255;
+            return (byte)value;
+        }
+
         public static Bitmap ApplyKernel(this Bitmap bm, float[,] kernel, float weight, float offset)
         {
             // check the kernel has odd dimensions
@@ -238,6 +247,34 @@ namespace ImageProcessing
             resultBm32.UnlockBitmap();
 
             return resultBm;
+        }
+
+
+        private static float[,] OnesArray(int radius)
+        {
+            var width = 2 * radius + 1;
+            float[,] result = new float[width, width];
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < width; j++)
+                {
+                    result[i, j] = 1f;
+                }
+            }
+            return result;
+        }
+
+        public static Bitmap BoxBlur(this Bitmap bm, int radius)
+        {
+            // Make the kernel.
+            float[,] kernel = OnesArray(radius);
+
+            // Apply the kernel.
+            int numRows = 2 * radius + 1;
+            int numCols = numRows;
+            float weight = numRows * numCols;
+            float offset = 0;
+            return bm.ApplyKernel(kernel, weight, offset);
         }
     }
 }
