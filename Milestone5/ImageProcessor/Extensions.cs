@@ -175,5 +175,69 @@ namespace ImageProcessing
             if (value > 255) return (byte)255;
             return (byte)Math.Round(value);
         }
+
+        public static Bitmap ApplyKernel(this Bitmap bm, float[,] kernel, float weight, float offset)
+        {
+            // check the kernel has odd dimensions
+            var kernelRows = kernel.GetUpperBound(0) + 1;
+            var kernelColumns = kernel.GetUpperBound(1) + 1;
+            if (kernelRows % 2 != 1 || kernelColumns % 2 != 1) throw new ArgumentException("Kernel dimensions must be odd");
+
+            var width = bm.Width;
+            var height = bm.Height;
+            var resultBm = new Bitmap(width, height);
+            using (Graphics graphics = Graphics.FromImage(resultBm))
+            {
+                graphics.Clear(Color.Black);
+            }
+
+            var bm32 = new Bitmap32(bm);
+            var resultBm32 = new Bitmap32(resultBm);
+            bm32.LockBitmap();
+            resultBm32.LockBitmap();
+
+            var xRadius = kernelRows / 2;
+            var yRadius = kernelColumns / 2;
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    float rTotal = 0f;
+                    float gTotal = 0f;
+                    float bTotal = 0f;
+                    for (int dx = -xRadius; dx < xRadius; dx++)
+                    {
+                        for (int dy = -yRadius; dy < yRadius; dy++)
+                        {
+                            int sourceX = x + dx;
+                            if (sourceX < 0) sourceX = 0;
+                            else if (sourceX > width) sourceX = width - 1;
+
+                            int sourceY = y + dy;
+                            if (sourceY < 0) sourceY = 0;
+                            else if (sourceY > height) sourceY = height - 1;
+
+                            byte r, g, b, a;
+                            bm32.GetPixel(sourceX, sourceY, out r, out g, out b, out a);
+                            var scale = kernel[dy + yRadius, dx + xRadius];
+                            rTotal += r * scale;
+                            gTotal += g * scale;
+                            bTotal += b * scale;
+                        }
+                    }
+
+                    var newR = (rTotal / weight + offset).ToByte();
+                    var newG = (gTotal / weight + offset).ToByte();
+                    var newB = (gTotal / weight + offset).ToByte();
+
+                    resultBm32.SetPixel(x, y, newR, newG, newB, 255);
+                }
+            }
+
+            bm32.UnlockBitmap();
+            resultBm32.UnlockBitmap();
+
+            return resultBm;
+        }
     }
 }
