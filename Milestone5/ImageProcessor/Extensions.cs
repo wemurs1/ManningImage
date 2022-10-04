@@ -214,17 +214,17 @@ namespace ImageProcessing
                     float rTotal = 0f;
                     float gTotal = 0f;
                     float bTotal = 0f;
-                    for (int dx = -xRadius; dx < xRadius; dx++)
+                    for (int dx = -xRadius; dx <= xRadius; dx++)
                     {
-                        for (int dy = -yRadius; dy < yRadius; dy++)
+                        for (int dy = -yRadius; dy <= yRadius; dy++)
                         {
                             int sourceX = x + dx;
                             if (sourceX < 0) sourceX = 0;
-                            else if (sourceX > width) sourceX = width - 1;
+                            else if (sourceX >= width) sourceX = width - 1;
 
                             int sourceY = y + dy;
                             if (sourceY < 0) sourceY = 0;
-                            else if (sourceY > height) sourceY = height - 1;
+                            else if (sourceY >= height) sourceY = height - 1;
 
                             byte r, g, b, a;
                             bm32.GetPixel(sourceX, sourceY, out r, out g, out b, out a);
