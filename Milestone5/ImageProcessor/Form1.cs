@@ -573,7 +573,10 @@ namespace ImageProcessing
 
         private void mnuFiltersBoxBlur_Click(object sender, EventArgs e)
         {
-
+            var radius = InputForm.GetInt("Box Blur", "Radius", "0",0, 255, "Radius must be between 0 and 255");
+            if (radius < 0) return;
+            CurrentBm = CurrentBm!.BoxBlur(radius);
+            resultPictureBox.Image = CurrentBm;
         }
 
         private void mnuFiltersUnsharpMask_Click(object sender, EventArgs e)
@@ -608,7 +611,6 @@ namespace ImageProcessing
         {
 
         }
-
         #endregion Filters
 
     }
