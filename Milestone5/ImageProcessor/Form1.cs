@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 
 using System.Drawing.Drawing2D;
+using image_processor;
 
 namespace ImageProcessing
 {
@@ -594,7 +595,7 @@ namespace ImageProcessing
                 CurrentBm = CurrentBm!.UnsharpMask(radius, amount);
                 resultPictureBox.Image = CurrentBm;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
@@ -602,22 +603,66 @@ namespace ImageProcessing
 
         private void mnuFiltersRankFilter_Click(object sender, EventArgs e)
         {
+            var text = InputForm.GetString("Rank Filter", "Radius (int), Rank (int):", "1, 2");
+            if (text == null) return;
 
+            string[] fields = text.Split(',');
+            int radius, rank;
+            if (!int.TryParse(fields[0], out radius) ||
+                !int.TryParse(fields[1], out rank) ||
+                (radius < 0) || (rank < 0))
+            {
+                MessageBox.Show("Radius should be a non-negative integer and " +
+                    "rank should be an integer between 0 and the number of pixels in the window.");
+                return;
+            }
+
+            int numRows = 2 * radius + 1;
+            int size = numRows * numRows;
+            int numNeighbors = numRows * numRows;
+
+            if (rank >= numNeighbors)
+            {
+                MessageBox.Show(string.Format($"For radius {radius}, # rows = {numRows} and rank should be between 0 and {numNeighbors - 1}"));
+                return;
+            }
+
+            CurrentBm = CurrentBm!.RankFilter(radius, radius, rank);
+            resultPictureBox.Image = CurrentBm;
         }
 
         private void mnuFiltersMedianFilter_Click(object sender, EventArgs e)
         {
+            int radius = InputForm.GetInt("Median Filter", "Radius:", "1", 0, int.MaxValue, "Radius should be a non-negative integer.");
+            if (radius <= 0) return;
 
-        }
+            int numRows = 2 * radius + 1;
+            int rank = (numRows * numRows) / 2;
 
-        private void mnuFiltersMinFilter_Click(object sender, EventArgs e)
-        {
-
+            CurrentBm = CurrentBm!.RankFilter(radius, radius, rank);
+            resultPictureBox.Image = CurrentBm;
         }
 
         private void mnuFiltersMaxFilter_Click(object sender, EventArgs e)
         {
+            int radius = InputForm.GetInt("Median Filter", "Radius:", "1", 0, int.MaxValue, "Radius should be a non-negative integer.");
+            if (radius <= 0) return;
 
+            int numRows = 2 * radius + 1;
+            int rank = numRows * numRows - 1;
+
+            CurrentBm = CurrentBm!.RankFilter(radius, radius, rank);
+            resultPictureBox.Image = CurrentBm;
+        }
+
+        private void mnuFiltersMinFilter_Click(object sender, EventArgs e)
+        {
+            int radius = InputForm.GetInt("Min Filter", "Radius:", "1", 0, int.MaxValue, "Radius should be a non-negative integer.");
+            if (radius <= 0) return;
+
+            int rank = 0;
+            CurrentBm = CurrentBm!.RankFilter(radius, radius, rank);
+            resultPictureBox.Image = CurrentBm;
         }
 
         // Display a dialog where the user can select
@@ -625,6 +670,40 @@ namespace ImageProcessing
         // If the user clicks OK, apply the kernel.
         private void mnuFiltersCustomKernel_Click(object sender, EventArgs e)
         {
+            KernelForm dlg = new KernelForm();
+            if (dlg.ShowDialog() == DialogResult.Cancel) return;
+
+            try
+            {
+                float weight = float.Parse(dlg.weightTextBox.Text);
+                float offset = float.Parse(dlg.offsetTextBox.Text);
+
+                char[] lineSeps = { '\n', '\r' };
+                string[] lines = dlg.valueTextBox.Text.Split(lineSeps, StringSplitOptions.RemoveEmptyEntries);
+
+                int numRows = lines.Length;
+
+                char[] fieldSeps = { ',', ';' };
+                int numCols = lines[0].Split(fieldSeps, StringSplitOptions.RemoveEmptyEntries).Length;
+
+                float[,] kernel = new float[numRows, numCols];
+                for (int r = 0; r < numRows; r++)
+                {
+                    string[] fields = lines[r].Split(fieldSeps, StringSplitOptions.RemoveEmptyEntries);
+
+                    for (int c = 0; c < numCols; c++)
+                    {
+                        kernel[r, c] = float.Parse(fields[c]);
+                    }
+                }
+
+                CurrentBm = CurrentBm!.ApplyKernel(kernel, weight, offset);
+                resultPictureBox.Image = CurrentBm;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
 
         }
         #endregion Filters
