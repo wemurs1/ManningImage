@@ -573,15 +573,31 @@ namespace ImageProcessing
 
         private void mnuFiltersBoxBlur_Click(object sender, EventArgs e)
         {
-            var radius = InputForm.GetInt("Box Blur", "Radius", "0",0, 255, "Radius must be between 0 and 255");
-            if (radius < 0) return;
+            var radius = InputForm.GetInt("Box Blur", "Radius", "1", 1, int.MaxValue, "Radius should be an integer greater than 0.");
+            if (radius <= 0) return;
             CurrentBm = CurrentBm!.BoxBlur(radius);
             resultPictureBox.Image = CurrentBm;
         }
 
         private void mnuFiltersUnsharpMask_Click(object sender, EventArgs e)
         {
+            var text = InputForm.GetString("Unsharp Masking", "Radius (int), Amount (float):", "1, 0.5");
+            if (text == null) return;
 
+            char[] separators = { ',' };
+            string[] fields = text.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+            try
+            {
+                var radius = int.Parse(fields[0]);
+                var amount = float.Parse(fields[1]);
+
+                CurrentBm = CurrentBm!.UnsharpMask(radius, amount);
+                resultPictureBox.Image = CurrentBm;
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private void mnuFiltersRankFilter_Click(object sender, EventArgs e)
