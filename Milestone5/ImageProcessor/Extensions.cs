@@ -1,4 +1,5 @@
-﻿using System.Drawing.Drawing2D;
+﻿using ImageProcessor;
+using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 
 namespace ImageProcessing
@@ -275,6 +276,65 @@ namespace ImageProcessing
             float weight = numRows * numCols;
             float offset = 0;
             return bm.ApplyKernel(kernel, weight, offset);
+        }
+
+        public static Bitmap UnsharpMask(this Bitmap bm, int radius, float amount)
+        {
+            Bitmap blurred = bm.BoxBlur(radius);
+
+            var original32 = new Bitmap32(bm);
+            var blurred32 = new Bitmap32(blurred);
+            var result32 = original32 + (original32 - blurred32) * amount;
+
+            return result32.Bitmap;
+        }
+
+        public static Bitmap RankFilter(this Bitmap bm, int xRadius, int yRadius, int rank)
+        {
+            int width = bm.Width;
+            int height = bm.Height;
+            Bitmap result = new Bitmap(width, height);
+            using (Graphics graphics = Graphics.FromImage(result))
+            {
+                graphics.Clear(Color.Black);
+            }
+            var source32 = new Bitmap32(bm);
+            var result32 = new Bitmap32(result);
+            source32.LockBitmap();
+            result32.LockBitmap();
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    var pixels = new List<PixelData>();
+                    for (int ix = -xRadius; ix <= xRadius; ix++)
+                    {
+                        for (int iy = -yRadius; iy <= yRadius; iy++)
+                        {
+                            int sourceX = x + ix;
+                            if (sourceX < 0) sourceX = 0;
+                            else if (sourceX >= width) sourceX = width - 1;
+
+                            int sourceY = y + iy;
+                            if (sourceY < 0) sourceY = 0;
+                            else if (sourceY >= height) sourceY = height - 1;
+
+                            byte r, g, b, a;
+                            source32.GetPixel(sourceX, sourceY, out r, out g, out b, out a);
+                            pixels.Add(new PixelData(r, g, b, a));
+                        }
+                    }
+
+                    var pixelQuery = from pixel in pixels orderby pixel.Brightness select pixel;
+                    PixelData[] sorted = pixelQuery.ToArray();
+
+                    result32.SetPixel(x, y, sorted[rank].R, sorted[rank].G, sorted[rank].B, sorted[rank].A);
+                }
+            }
+            source32.UnlockBitmap();
+            result32.UnlockBitmap();
+            return result;
         }
     }
 }

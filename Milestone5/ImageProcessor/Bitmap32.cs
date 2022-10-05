@@ -186,11 +186,7 @@ namespace ImageProcessing
                     byte r1, g1, b1, a1, r2, g2, b2, a2;
                     bm1.GetPixel(x, y, out r1, out g1, out b1, out a1);
                     bm2.GetPixel(x, y, out r2, out g2, out b2, out a2);
-                    bm3.SetPixel(x, y,
-                        (r1 - r2).ToByte(),
-                        (g1 - g2).ToByte(),
-                        (b1 - b2).ToByte(),
-                        (a1 - a2).ToByte());
+                    bm3.SetPixel(x, y, (r1 - r2).ToByte(), (g1 - g2).ToByte(), (b1 - b2).ToByte(), (a1 - a2).ToByte());
                 }
             }
 
@@ -198,6 +194,62 @@ namespace ImageProcessing
             bm2.UnlockBitmap();
             bm3.UnlockBitmap();
             return bm3;
+        }
+
+        public static Bitmap32 operator +(Bitmap32 bm1, Bitmap32 bm2)
+        {
+            var width = Math.Min(bm1.Width, bm2.Width);
+            var height = Math.Min(bm1.Height, bm2.Height);
+            Bitmap bm = new Bitmap(width, height);
+            Bitmap32 bm3 = new Bitmap32(bm);
+            bm1.LockBitmap();
+            bm2.LockBitmap();
+            bm3.LockBitmap();
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    byte r1, g1, b1, a1, r2, g2, b2, a2;
+                    bm1.GetPixel(x, y, out r1, out g1, out b1, out a1);
+                    bm2.GetPixel(x, y, out r2, out g2, out b2, out a2);
+                    bm3.SetPixel(x, y, (r1 + r2).ToByte(), (g1 + g2).ToByte(), (b1 + b2).ToByte(), (a1 + a2).ToByte());
+                }
+            }
+
+            bm1.UnlockBitmap();
+            bm2.UnlockBitmap();
+            bm3.UnlockBitmap();
+            return bm3;
+        }
+
+        public static Bitmap32 operator *(Bitmap32 bm1, float f)
+        {
+            var width = bm1.Width;
+            var height = bm1.Height;
+            Bitmap bm = new Bitmap(width, height);
+            Bitmap32 bm2 = new Bitmap32(bm);
+            bm1.LockBitmap();
+            bm2.LockBitmap();
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    byte r1, g1, b1, a1;
+                    bm1.GetPixel(x, y, out r1, out g1, out b1, out a1);
+                    bm2.SetPixel(x, y, (f * r1).ToByte(), (f * g1).ToByte(), (f * b1).ToByte(), (f * a1).ToByte());
+                }
+            }
+
+            bm1.UnlockBitmap();
+            bm2.UnlockBitmap();
+            return bm2;
+        }
+
+        public static Bitmap32 operator *(float f, Bitmap32 bm1)
+        {
+            return bm1 * f;
         }
     }
 }
